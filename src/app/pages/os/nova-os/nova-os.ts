@@ -5,11 +5,13 @@ import { Router, RouterLink } from '@angular/router';
 import { OrdemServicoService } from '../../../core/services/ordem-servico.service';
 import { EquipamentoService } from '../../../core/services/equipamento.service';
 import { Equipamento } from '../../../core/models/equipamento.model';
+import { AuthService } from '../../../core/auth/auth.service';
 import {
   CreateOrdemServicoDto,
   Prioridade,
   TipoManutencao,
 } from '../../../core/models/ordem-servico.model';
+
 
 @Component({
   selector: 'app-nova-os',
@@ -21,6 +23,7 @@ export class NovaOs implements OnInit {
   private osService = inject(OrdemServicoService);
   private equipService = inject(EquipamentoService);
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   tipos = Object.values(TipoManutencao);
   prioridades = Object.values(Prioridade);
@@ -34,6 +37,7 @@ export class NovaOs implements OnInit {
     tipo_manutencao: TipoManutencao.CORRETIVA as TipoManutencao,
     prioridade: Prioridade.MEDIA as Prioridade,
     descricao_falha: '',
+    solicitanteId: this.authService.currentUser()?.id,
   };
 
   ngOnInit(): void {
@@ -53,6 +57,7 @@ export class NovaOs implements OnInit {
       tipo_manutencao: this.model.tipo_manutencao,
       prioridade: this.model.prioridade,
       descricao_falha: this.model.descricao_falha,
+      solicitanteId: this.model.solicitanteId || undefined,
     };
 
     this.osService.create(dto).subscribe({
