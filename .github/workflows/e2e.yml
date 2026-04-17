@@ -10,31 +10,69 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout frontend
         uses: actions/checkout@v4
+        with:
+          path: gestao-os-pim-Patrese
+
+      - name: Checkout API
+        uses: actions/checkout@v4
+        with:
+          repository: patrese-ebs/servicoPim-API-Patrese
+          path: servicoPim-API-Patrese
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
+          cache-dependency-path: gestao-os-pim-Patrese/package-lock.json
 
-      - name: Install dependencies
+      - name: Start E2E environment
+        working-directory: gestao-os-pim-Patrese
+        run: docker compose -f docker-compose.e2e.yml up -d --build
+
+      - name: Wait for API to be healthy
+        working-directory: gestao-os-pim-Patrese
+        run: |
+          echo "Aguardando API ficar pronta..."
+          for i in $(seq 1 30); do
+            if docker compose -f docker-compose.e2e.yml ps api | grep -q "healthy"; then
+              echo "API pronta!"
+              break
+            fi
+            echo "Tentativa $i/30..."
+            sleep 10
+          done
+
+      - name: Seed test database
+        working-directory: gestao-os-pim-Patrese
+        run: bash cypress/seeds/seed-e2e.sh
+
+      - name: Install frontend dependencies
+        working-directory: gestao-os-pim-Patrese
         run: npm install
 
       - name: Run Cypress E2E tests
         uses: cypress-io/github-action@v6
         with:
+          working-directory: gestao-os-pim-Patrese
           browser: chrome
           headed: false
+          install: false
         env:
-          CYPRESS_baseUrl: https://manuos.izitecnologia.com.br
-          CYPRESS_supervisor_email: ${{ secrets.CYPRESS_SUPERVISOR_EMAIL }}
-          CYPRESS_supervisor_senha: ${{ secrets.CYPRESS_SUPERVISOR_SENHA }}
+          CYPRESS_baseUrl: http://localhost:3000
+          CYPRESS_supervisor_email: admin@pim.com
+          CYPRESS_supervisor_senha: Admin@123
 
       - name: Upload screenshots on failure
         uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-screenshots
-          path: cypress/screenshots
+          path: gestao-os-pim-Patrese/cypress/screenshots
+
+      - name: Teardown E2E environment
+        if: always()
+        working-directory: gestao-os-pim-Patrese
+        run: docker compose -f docker-compose.e2e.yml down -v
