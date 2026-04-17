@@ -61,7 +61,7 @@ jobs:
           headed: false
           install: false
         env:
-          CYPRESS_baseUrl: http://localhost:3000
+          CYPRESS_BASE_URL: http://localhost:3000
           CYPRESS_supervisor_email: admin@pim.com
           CYPRESS_supervisor_senha: Admin@123
 
