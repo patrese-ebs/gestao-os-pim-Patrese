@@ -2,7 +2,7 @@ import { defineConfig } from 'cypress';
 
 export default defineConfig({
   e2e: {
-    baseUrl: process.env['CYPRESS_baseUrl'] ?? 'https://manuos.izitecnologia.com.br',
+    baseUrl: 'https://manuos.izitecnologia.com.br',
     viewportWidth: 1280,
     viewportHeight: 720,
     defaultCommandTimeout: 10000,
