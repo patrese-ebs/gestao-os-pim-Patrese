@@ -1,20 +1,19 @@
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies (inclui devDependencies com @angular/cli)
 COPY package*.json ./
 RUN npm install
 
-# Copy source and build
+# Copy source and build using local ng binary
 COPY . .
-RUN npm run build -- --configuration production
+RUN ./node_modules/.bin/ng build --configuration production
 
-# Production stage
+# Production stage with Nginx
 FROM nginx:alpine
 
-# Copy build output
-# Path: dist/servPim/browser (verified earlier)
+# Copy build output (path: dist/servPim/browser)
 COPY --from=build /app/dist/servPim/browser /usr/share/nginx/html
 
 # Copy nginx config
