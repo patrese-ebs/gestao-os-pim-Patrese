@@ -70,7 +70,7 @@ jobs:
       - name: Override baseUrl in cypress.config.ts
         working-directory: gestao-os-pim-Patrese
         run: |
-          sed -i "s|baseUrl: 'https://manuos.izitecnologia.com.br'|baseUrl: 'http://localhost:3000'|" cypress.config.ts
+          sed -i "s|baseUrl: '[^']*'|baseUrl: 'http://localhost:3000'|" cypress.config.ts
           echo "--- cypress.config.ts ---"
           cat cypress.config.ts
 
